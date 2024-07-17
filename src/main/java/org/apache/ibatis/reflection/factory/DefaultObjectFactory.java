@@ -15,26 +15,20 @@
  */
 package org.apache.ibatis.reflection.factory;
 
-import java.io.Serializable;
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
-
 import org.apache.ibatis.reflection.ReflectionException;
 import org.apache.ibatis.reflection.Reflector;
 
+import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * @author Clinton Begin
+ *
+ * DefaultObjectFactory 继承了 ObjectFactory 接口，是默认的对象工厂实现。
+ * 作为工厂，DefaultObjectFactory的 create方法用来生产对象，而两个 create方法最终都用到了代码6-12所示的 instantiateClass方法。
+ * instantiateClass 方法能够通过反射找到与参数匹配的构造方法，然后基于反射调用该构造方法生成一个对象。
  */
 public class DefaultObjectFactory implements ObjectFactory, Serializable {
 
@@ -99,11 +93,19 @@ public class DefaultObjectFactory implements ObjectFactory, Serializable {
             }
         } catch (Exception e) {
             // 收集所有的参数类型
-            String argTypes = Optional.ofNullable(constructorArgTypes).orElseGet(Collections::emptyList)
-                    .stream().map(Class::getSimpleName).collect(Collectors.joining(","));
+            String argTypes = Optional
+                    .ofNullable(constructorArgTypes)
+                    .orElseGet(Collections::emptyList)
+                    .stream()
+                    .map(Class::getSimpleName)
+                    .collect(Collectors.joining(","));
             // 收集所有的参数
-            String argValues = Optional.ofNullable(constructorArgs).orElseGet(Collections::emptyList)
-                    .stream().map(String::valueOf).collect(Collectors.joining(","));
+            String argValues = Optional
+                    .ofNullable(constructorArgs)
+                    .orElseGet(Collections::emptyList)
+                    .stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(","));
             throw new ReflectionException("Error instantiating " + type + " with invalid types (" + argTypes + ") or values (" + argValues + "). Cause: " + e, e);
         }
     }

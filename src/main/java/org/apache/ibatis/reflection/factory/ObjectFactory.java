@@ -27,7 +27,7 @@ import java.util.Properties;
 public interface ObjectFactory {
 
     /**
-     * Sets configuration properties.
+     * 设置工厂的属性。
      * @param properties configuration properties
      */
     default void setProperties(Properties properties) {
@@ -35,14 +35,14 @@ public interface ObjectFactory {
     }
 
     /**
-     * Creates a new object with default constructor.
+     * 传入一个类型，采用无参构造方法生成这个类型的实例。
      * @param type Object type
      * @return
      */
     <T> T create(Class<T> type);
 
     /**
-     * Creates a new object with the specified constructor and params.
+     * 传入一个目标类型、一个参数类型列表、一个参数值列表，根据参数列表找到相应的含参构造方法生成这个类型的实例。
      * @param type Object type
      * @param constructorArgTypes Constructor argument types
      * @param constructorArgs Constructor argument values
@@ -51,7 +51,7 @@ public interface ObjectFactory {
     <T> T create(Class<T> type, List<Class<?>> constructorArgTypes, List<Object> constructorArgs);
 
     /**
-     * Returns true if this object can have a set of other objects.
+     * 判断传入的类型是否是集合类。
      * It's main purpose is to support non-java.util.Collection objects like Scala collections.
      *
      * @param type Object type

@@ -37,7 +37,8 @@ public class ExceptionFactory {
      * @return 新的RuntimeException异常
      */
     public static RuntimeException wrapException(String message, Exception e) {
-        return new PersistenceException(ErrorContext.instance().message(message).cause(e).toString(), e);
+        String msg_cause = ErrorContext.instance().message(message).cause(e).toString();
+        return new PersistenceException(msg_cause, e);
     }
 
 }
