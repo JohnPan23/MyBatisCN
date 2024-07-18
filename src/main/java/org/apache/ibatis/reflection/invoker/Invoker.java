@@ -28,9 +28,9 @@ import java.lang.reflect.InvocationTargetException;
 public interface Invoker {
     /**
      *
-     * 1. GetFieldInvoker的实现是，执行反射属性Field.get()
-     * 2. SetFieldInvoker的实现是，执行反射属性Field.set()
-     * 3. MethodInvoker的实现是，执行反射方法Method.invoke()
+     * 1. GetFieldInvoker的实现是，执行 反射属性Field.get()
+     * 2. SetFieldInvoker的实现是，执行 反射属性Field.set()
+     * 3. MethodInvoker的实现是，  执行 反射方法Method.invoke()
      */
     Object invoke(Object target, Object[] args)
             throws IllegalAccessException, InvocationTargetException;
