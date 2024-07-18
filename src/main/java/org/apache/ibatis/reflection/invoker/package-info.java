@@ -17,5 +17,15 @@
  */
 /**
  * Unused.
+ *
+ * reflection 包下的 invoker 子包是执行器子包，该子包中的类能够基于反射实现对象方法的调用和对象属性的读写。
+ * 学习了反射的基本概念之后，我们知道通过反射可以很方便地调用对象的方法和读写方法的属性。而 invoker子包则进一步封装和简化了这些操作。
+ * invoker 子包有一个 Invoker 接口和三个实现，Invoker 接口及其实现类类图如图6-6所示。
+ *
+ *
+ * Invoker接口的三个实现分别用来处理三种不同情况。
+ * · GetFieldInvoker：负责对象属性的读操作；
+ * · SetFieldInvoker：负责对象属性的写操作；
+ * · MethodInvoker：负责对象其他方法的操作。
  */
 package org.apache.ibatis.reflection.invoker;

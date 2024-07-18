@@ -18,12 +18,22 @@ package org.apache.ibatis.reflection.invoker;
 import java.lang.reflect.InvocationTargetException;
 
 /**
- * @author Clinton Begin
+ * 我们先阅读 Invoker接口的源码，它只定义了以下两个抽象方法。
+ * <p>
+ * invoke方法，即执行方法。该方法负责完成对象方法的调用和对象属性的读写。在三个实现类中，分别是属性读取操作、属性赋值操作、方法触发操作。
+ * <p>
+ * getType方法，用来获取类型。它对于 GetFieldInvoker和 SetFieldInvoker的含义也是明确的，即获得目标属性的类型。可 MethodInvoker对应的是一个方法，getType方法对于 MethodInvoker类型而言的意义是什么呢？
+ * 阅读 MethodInvoker中的 getType方法，我们发现该方法直接返回了 MethodInvoker中的 type属性。该 type属性的定义如代码6-13所示。
  */
 public interface Invoker {
-    // 方法执行调用器
-    Object invoke(Object target, Object[] args) throws IllegalAccessException, InvocationTargetException;
+    /**
+     *
+     * 1. GetFieldInvoker的实现是，执行反射属性Field.get()
+     * 2. SetFieldInvoker的实现是，执行反射属性Field.set()
+     * 3. MethodInvoker的实现是，执行反射方法Method.invoke()
+     */
+    Object invoke(Object target, Object[] args)
+            throws IllegalAccessException, InvocationTargetException;
 
-    // 传入参数或者传出参数的类型（如有一个入参就是入参，否则是出参）
     Class<?> getType();
 }
