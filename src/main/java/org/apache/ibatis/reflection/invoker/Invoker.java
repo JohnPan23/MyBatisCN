@@ -18,6 +18,10 @@ package org.apache.ibatis.reflection.invoker;
 import java.lang.reflect.InvocationTargetException;
 
 /**
+ *                              Invoker
+ *                      ↙          ↓          ↘
+ *      GetFieldInvoker   SetFieldInvoker    MethodInvoker
+ * <p>
  * 我们先阅读 Invoker接口的源码，它只定义了以下两个抽象方法。
  * <p>
  * invoke方法，即执行方法。该方法负责完成对象方法的调用和对象属性的读写。在三个实现类中，分别是属性读取操作、属性赋值操作、方法触发操作。

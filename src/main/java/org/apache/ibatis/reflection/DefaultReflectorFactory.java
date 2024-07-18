@@ -39,7 +39,7 @@ public class DefaultReflectorFactory implements ReflectorFactory {
     }
 
     /**
-     * 生产Reflector对象
+     * 最核心的方法就是用来生成一个类的 Reflector 对象
      * @param type 目标类型
      * @return 目标类型的Reflector对象
      */

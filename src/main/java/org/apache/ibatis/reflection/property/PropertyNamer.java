@@ -15,13 +15,17 @@
  */
 package org.apache.ibatis.reflection.property;
 
-import java.util.Locale;
-
 import org.apache.ibatis.reflection.ReflectionException;
+
+import java.util.Locale;
 
 /**
  * @author Clinton Begin
  * 属性（包括属性方法）名称处理器
+ * <p>
+ * PropertyNamer提供属性名称相关的操作功能，例如，通过 get、set方法的方法名找出对应的属性等。要想让 PropertyNamer 正常地发挥作用，需保证对象属性、方法的命名遵循 Java Bean的命名规范，即：
+ * · 如果类的成员变量的名字是 abc，那么该属性对应的读写方法分别命名为 getAbc（）和 setAbc（）。
+ * · 如果类的属性是 boolean 类型，则允许使用“is”代替上面的“get”，读方法命名为 isAbc（）。
  */
 public final class PropertyNamer {
 
@@ -29,7 +33,9 @@ public final class PropertyNamer {
         // Prevent Instantiation of Static Class
     }
 
-    // 将方法名转化为属性名
+    /**
+     * 将方法名转化为属性名
+     */
     public static String methodToProperty(String name) {
         if (name.startsWith("is")) {
             name = name.substring(2);
@@ -47,7 +53,9 @@ public final class PropertyNamer {
         return name;
     }
 
-    // 判断方法是不是getter或者setter
+    /**
+     * 判断方法是不是getter或者setter
+     */
     public static boolean isProperty(String name) {
         return isGetter(name) || isSetter(name);
     }

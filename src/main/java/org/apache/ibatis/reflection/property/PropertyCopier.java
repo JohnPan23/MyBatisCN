@@ -15,13 +15,14 @@
  */
 package org.apache.ibatis.reflection.property;
 
-import java.lang.reflect.Field;
-
 import org.apache.ibatis.reflection.Reflector;
 
+import java.lang.reflect.Field;
+
 /**
- * @author Clinton Begin
- * 属性拷贝器
+ * 如代码6-15所示，如果想让 user2的属性和 user1的属性完全一致，则需要对属性一一进行复制，这样的过程是繁杂的。
+ * PropertyCopier 作为属性复制器，就是用来解决上述问题的。
+ * 借助于属性复制器PropertyCopier，我们可以方便地将一个对象的属性复制到另一个对象中，如代码6-16所示。
  */
 public final class PropertyCopier {
 
@@ -31,6 +32,10 @@ public final class PropertyCopier {
 
     /**
      * 完成对象的输出拷贝
+     * <p>
+     * copyBeanProperties方法的工作原理非常简单：通过反射获取类的所有属性，然后依次将这些属性值从源对象复制出来并赋给目标对象。
+     * 但是要注意一点，该属性复制器无法完成继承得来的属性的复制，因为 getDeclaredFields方法返回的属性中不包含继承属性。
+     *
      * @param type 对象的类型
      * @param sourceBean 提供属性值的对象
      * @param destinationBean 要被写入新属性值的对象

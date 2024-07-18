@@ -24,8 +24,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * @author Clinton Begin
- *
  * DefaultObjectFactory 继承了 ObjectFactory 接口，是默认的对象工厂实现。
  * 作为工厂，DefaultObjectFactory的 create方法用来生产对象，而两个 create方法最终都用到了代码6-12所示的 instantiateClass方法。
  * instantiateClass 方法能够通过反射找到与参数匹配的构造方法，然后基于反射调用该构造方法生成一个对象。

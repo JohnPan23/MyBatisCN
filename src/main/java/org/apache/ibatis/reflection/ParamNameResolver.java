@@ -15,6 +15,12 @@
  */
 package org.apache.ibatis.reflection;
 
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.binding.MapperMethod.ParamMap;
+import org.apache.ibatis.session.Configuration;
+import org.apache.ibatis.session.ResultHandler;
+import org.apache.ibatis.session.RowBounds;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -22,12 +28,21 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.binding.MapperMethod.ParamMap;
-import org.apache.ibatis.session.Configuration;
-import org.apache.ibatis.session.ResultHandler;
-import org.apache.ibatis.session.RowBounds;
-
+/**
+ * ParamNameResolver 是一个参数名解析器，用来按顺序列出方法中的虚参，并对实参进行名称标注。
+ * 参数名解析器中主要涉及的是字符串的处理，因此关于参数名解析器的源码阅读我们也采用一种比较特殊的方法：断点调试法。
+ *
+ * ParamNameResolver 类主要的方法有两个：构造方法 ParamNameResolver 和getNamedParams方法。
+ * 构造方法 ParamNameResolver能够将目标方法的参数名称依次列举出来。在列举的过程中，如果某个参数存在@Param注解，则会用注解的 value值替换参数名。
+ * 我们直接使用断点调试法探究该方法的功能。假设有代码6-29所示的方法。
+ * 经过构造方法 ParamNameResolver 解析后，可以通过调试工具看到属性 names 和hasParamAnnotation中的值，如图6-9所示。
+ * 而 getNamedParams方法是在构造方法确定的 names属性和 hasParamAnnotation属性值的基础上，给出实参的参数名。例如，使用代码6-30所示的语句调用代码6-29中的方法。
+ * 调用后，则 getNamedParams会给出如图6-10所示的输出。
+ *
+ * 这样，我们就在映射文件中使用变量名“param3”或者“emailAddress”引用了参数值“yeecode@sample.com”。
+ * 有了断点调试的结果后，再阅读构造方法 ParamNameResolver和 getNamedParams方法就变得非常简单，留给大家自行完成。
+ * 断点调试法在阅读字符串处理类的函数时十分有效，因为打断点的方式能够将字符串处理过程中的所有中间值展现出来，便于把握程序的每一步流程。
+ */
 public class ParamNameResolver {
 
     private static final String GENERIC_NAME_PREFIX = "param";
@@ -48,10 +63,9 @@ public class ParamNameResolver {
      * 凡是加了@Param注解的会单独处理，特殊参数也会单独处理
      */
 
-    // 方法入参的参数次序表。键为参数次序，值为参数名称或者参数@Param注解的值
-    private final SortedMap<Integer, String> names;
-    // 该方法入参中是否含有@Param注解
-    private boolean hasParamAnnotation;
+
+    private final SortedMap<Integer, String> names; // 方法入参的参数次序表。键为参数次序，值为参数名称或者参数@Param注解的值
+    private boolean hasParamAnnotation;             // 该方法入参中是否含有@Param注解
 
     /**
      * 参数名解析器的构造方法

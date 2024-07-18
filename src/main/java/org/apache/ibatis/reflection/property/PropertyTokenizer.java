@@ -27,6 +27,9 @@ import java.util.Iterator;
  * 则各个属性得到以下结果
  *
  * 该属性标记器只能处理一级，即点后面的都作为children
+ * <p>
+ * PropertyTokenizer 是一个属性标记器。
+ * 传入一个形如“student[sId].name”的字符串后，该标记器会将其拆分开，放入各个属性中。拆分结束后各个属性的值如代码6-18中的注释所示。
  */
 public class PropertyTokenizer implements Iterator<PropertyTokenizer> {
 

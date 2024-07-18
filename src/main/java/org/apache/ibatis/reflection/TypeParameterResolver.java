@@ -26,7 +26,38 @@ import java.lang.reflect.WildcardType;
 import java.util.Arrays;
 
 /**
- * @author Iwao AVE!
+ * TypeParameterResolver是泛型参数解析器。在阅读它的源码之前我们先弄清一个问题：它的功能是什么？很多情况下，弄清一个类的功能对阅读其源码十分必要。
+ * <p>
+ * 假设有 User和 Student两个类，分别如代码6-31和代码6-32所示。
+ * 请问：Student类中的 getInfo方法（继承自父类 User）的输出参数类型是什么？
+ * 答案很简单，是“List＜Number＞”。但是得出这个答案的过程却涉及 User 和 Student两个类。首先通过 User 类确定 getInfo 方法的输出结果是“List＜T＞”，然后通过 Student类得知“T”被设置为“Number”。因此，Student 类中的 getInfo 方法的输出参数是“List＜Number＞”。
+ * <p>
+ * TypeParameterResolver 类的功能就是完成上述分析过程，帮助 MyBatis 推断出属性、返回值、输入参数中泛型的具体类型。例如，通过代码6-33 所示的调用，TypeParameterResolver便分析出 User类中的 getInfo方法的输出参数是“List＜Object＞”，Student类中的 getInfo方法的输出参数是“List＜Number＞”。
+ * <p>
+ * 了解了 TypeParameterResolver类的功能后，下面来查看它的源码。它对外提供以下三个方法。
+ * · resolveFieldType：解析属性的泛型；
+ * · resolveReturnType：解析方法返回值的泛型；
+ * · resolveParamTypes：解析方法输入参数的泛型。
+ * 上述这三个方法都只是将要解析的变量从属性、方法返回值、方法输入参数中找出来。变量的泛型解析才是最核心的工作。以代码6-34所示的 resolveParamTypes方法为例，该方法将变量从方法输入参数中找出后，对每个变量都调用了 resolveType 方法。因此，resolveType是最重要的方法。
+ * <p>
+ * resolveType方法根据目标类型的不同调用不同的子方法进行处理。
+ * 在分析 resolveType方法的源码之前，有必要再强调一下 resolveType的输入参数，以防大家混淆。以上文中提到的“Student类中的 getInfo方法（继承自父类 User）的输出参数类型是什么？”这一问题为例，则：
+ * · type：指要分析的字段或者参数的类型。这里我们要分析的是 getInfo的输出参数，即“List＜T＞”的类型。
+ * · srcType：指要分析的字段或者参数所属的类。我们这里要分析的是 Student类中的getInfo方法，故所属的类是 Student类。
+ * · declaringClass：指定义要分析的字段或者参数的类。getInfo 方法在 User 类中被定义，故这里是 User类。
+ * resolveType方法的带注释源码如代码6-35所示。
+ * <p>
+ * resolveType 根据不同的参数类型调用了不同的子方法进行处理。我们直接以“List＜T＞”对应的 resolveParameterizedType子方法为例进行分析，而该子方法也是所有子方法中最为复杂的一个。
+ * “List＜T＞”作为参数化类型会触发 resolveParameterizedType 方法进行处理。resolveParameterizedType方法的带注释源码如代码6-36所示。
+ * <p>
+ * 对于 resolveParameterizedType方法中的各种分支情况我们已经在代码6-36中通过注释进行了详细说明。在示例中，parameterizedType 为“List＜T＞”，因此会继续调用resolveTypeVar方法对泛型变量“T”进行进一步的解析。
+ * resolveTypeVar方法的带注释源码如代码6-37所示。resolveTypeVar方法会尝试通过继承关系等确定泛型变量的具体结果。
+ * <p>
+ * 这样，我们以“Student类中的 getInfo方法（继承自父类 User）的输出参数类型是什么？”这一问题为主线，对 TypeParameterResolver的源码进行了阅读。
+ * 在代码6-35 所示的 resolveType 方法中，会根据变量的类型调用 resolveTypeVar、resolveParameterizedType、resolveGenericArrayType三个方法进行解析。而在本节中，我们通过示例“List＜T＞”对 resolveTypeVar（代码6-37）、resolveParameterizedType（代码6-36）的源码进行了阅读。而 resolveGenericArrayType方法的带注释源码如代码6-38所示。
+ * <p>
+ * resolveGenericArrayType方法并不复杂，只是根据元素类型又调用了其他几个方法。
+ * 这样，我们以断点调试法为基础，以“List＜T＞”类型的泛型变量为用例，通过以点带面的方式完成了 TypeParameterResolver类的源码阅读。这种以用例为主线的源码阅读方法能帮助我们排除很多干扰从而专注于一条逻辑主线。而等这条逻辑主线的源码被阅读清楚时，其他逻辑主线往往也会迎刃而解。
  */
 public class TypeParameterResolver {
 

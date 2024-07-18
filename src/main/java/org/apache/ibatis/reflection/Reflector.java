@@ -15,76 +15,49 @@
  */
 package org.apache.ibatis.reflection;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.ReflectPermission;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import org.apache.ibatis.reflection.invoker.GetFieldInvoker;
 import org.apache.ibatis.reflection.invoker.Invoker;
 import org.apache.ibatis.reflection.invoker.MethodInvoker;
 import org.apache.ibatis.reflection.invoker.SetFieldInvoker;
 import org.apache.ibatis.reflection.property.PropertyNamer;
 
+import java.lang.reflect.*;
+import java.util.*;
+import java.util.Map.Entry;
+
 /**
- * This class represents a cached set of class definition information that
- * allows for easy mapping between property names and getter/setter methods.
+ * Reflector 类负责对一个类进行反射解析，并将解析后的结果在属性中存储起来。
+ * Reflector 类将一个类反射解析后，会将该类的属性、方法等一一归类放到以上的各个属性中。因此 Reflector类完成了主要的反射解析工作，这也是我们将其称为反射核心类的原因。
+ * Reflector类反射解析一个类的过程是由构造函数触发的，逻辑非常清晰。
  *
- * @author Clinton Begin
+ * reflection包中的其他类则多是在其反射结果的基础上进一步包装的，使整个反射功能更易用。
  */
 public class Reflector {
 
-    // 要被反射解析的类
-    private final Class<?> type;
-    // 能够读的属性列表，即有get方法的属性列表
-    private final String[] readablePropertyNames;
-    // 能够写的属性列表，即有set方法的属性列表
-    private final String[] writablePropertyNames;
-    // set方法映射表。键为属性名，值为对应的set方法
-    private final Map<String, Invoker> setMethods = new HashMap<>();
-    // get方法映射表。键为属性名，值为对应的get方法
-    private final Map<String, Invoker> getMethods = new HashMap<>();
-    // set方法输入类型。键为属性名，值为对应的该属性的set方法的类型（实际为set方法的第一个参数的类型）
-    private final Map<String, Class<?>> setTypes = new HashMap<>();
-    // get方法输出类型。键为属性名，值为对应的该属性的set方法的类型（实际为set方法的返回值类型）
-    private final Map<String, Class<?>> getTypes = new HashMap<>();
-    // 默认构造函数
-    private Constructor<?> defaultConstructor;
-    // 大小写无关的属性映射表。键为属性名全大写值，值为属性名
-    private Map<String, String> caseInsensitivePropertyMap = new HashMap<>();
+    private final Class<?> type;                                                // 要被反射解析的类
+    private final String[] readablePropertyNames;                               // 能够读的属性列表，即有get方法的属性列表
+    private final String[] writablePropertyNames;                               // 能够写的属性列表，即有set方法的属性列表
+    private final Map<String, Invoker> setMethods = new HashMap<>();            // set方法映射表。键为属性名，值为对应的set方法
+    private final Map<String, Invoker> getMethods = new HashMap<>();            // get方法映射表。键为属性名，值为对应的get方法
+    private final Map<String, Class<?>> setTypes = new HashMap<>();             // set方法输入类型。键为属性名，值为对应的该属性的set方法的类型（实际为set方法的第一个参数的类型）
+    private final Map<String, Class<?>> getTypes = new HashMap<>();             // get方法输出类型。键为属性名，值为对应的该属性的set方法的类型（实际为set方法的返回值类型）
+    private Constructor<?> defaultConstructor;                                  // 默认构造函数
+    private Map<String, String> caseInsensitivePropertyMap = new HashMap<>();   // 大小写无关的属性映射表。键为属性名全大写值，值为属性名
 
     /**
      * Reflector的构造方法
      * @param clazz 需要被反射处理的目标类
      */
     public Reflector(Class<?> clazz) {
-        // 要被反射解析的类
-        type = clazz;
-        // 设置默认构造器属性
-        addDefaultConstructor(clazz);
-        // 解析所有的getter
-        addGetMethods(clazz);
-        // 解析所有有setter
-        addSetMethods(clazz);
-        // 解析所有属性
-        addFields(clazz);
-        // 设定可读属性
-        readablePropertyNames = getMethods.keySet().toArray(new String[0]);
-        // 设定可写属性
-        writablePropertyNames = setMethods.keySet().toArray(new String[0]);
+
+        type = clazz;                                                       // 要被反射解析的类
+        addDefaultConstructor(clazz);                                       // 设置默认构造器属性
+        addGetMethods(clazz);                                               // 解析所有的getter
+        addSetMethods(clazz);                                               // 解析所有有setter
+        addFields(clazz);                                                   // 解析所有属性
+        readablePropertyNames = getMethods.keySet().toArray(new String[0]); // 设定可读属性
+        writablePropertyNames = setMethods.keySet().toArray(new String[0]); // 设定可写属性
+
         // 将可读或者可写的属性放入大小写无关的属性映射表
         for (String propName : readablePropertyNames) {
             caseInsensitivePropertyMap.put(propName.toUpperCase(Locale.ENGLISH), propName);
@@ -102,7 +75,8 @@ public class Reflector {
     }
 
     /**
-     * 找出类中的get方法
+     * 具体到每个子方法，其逻辑比较简单。下面以其中的 addGetMethods 方法为例进行介绍。
+     * addGetMethods方法的功能是分析参数中传入的类，将类中的 get方法添加到 getMethods方法中。
      * @param clazz 需要被反射处理的目标类
      */
     private void addGetMethods(Class<?> clazz) {
